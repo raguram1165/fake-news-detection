@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fake News Detection master using machine learning</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+    <style>
+        body {
+            background: BLUE;
+            color: BLACK;
+        }
+        .modal-body, .modal-footer, .modal-header {
+            background: #fff;
+            border: none;
+            color: black;
+        }
+        .modal-header .close {
+            color: red;
+            text-shadow: none;
+            font-size: 1.9rem;
+        }
+        .close {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div align="center" style="margin-top: 50px;" class="container">
+        <div class="card bg-transparent">
+            <div class="card-header bg-transparent">
+                <p id="source" data-text="FAKE NEWS DETECTION USING DEEP LEARNING!"></p>
+                <h1 id="dest"></h1>
+            </div>
+            <br>
+            <div class="card-body bg-transparent">
+                <form id="newsForm">
+                    <textarea class="form-control bg-dark text-white" name="news" id="news" placeholder="Paste your news here!" rows="5"></textarea>
+                    <br>
+                    <button type="submit" class="btn btn-lg btn-success" id="submit">CHECK</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Typewriter effect
+        var source = $('#source').attr('data-text');
+        var dest = $('#dest');
+        function typeWriter(text, n) {
+            if (n < text.length) {
+                dest.html(text.substring(0, n + 1));
+                n++;
+                setTimeout(function () {
+                    typeWriter(text, n);
+                }, 150);
+            }
+        }
+        typeWriter(source, 0);
+
+        $SCRIPT_ROOT = "{{ url_for('newscheck') }}";
+
+        // Form submission and AJAX request
+        $(function () {
+            $('#newsForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent page reload
+                var news = $('#news').val().trim();
+                if (!news) {
+                    bootbox.alert({
+                        size: "large",
+                        title: "EMPTY FIELD",
+                        message: "Please enter some news!",
+                        backdrop: true
+                    });
+                    return false;
+                }
+
+                // Send AJAX GET request to Flask endpoint
+                $.getJSON($SCRIPT_ROOT, { news: news }, function (data) {
+                    var src = data.result === "REAL" ? "static/success.gif" : "static/fail.gif";
+                    var message = data.result === "EMPTY" ? "Please enter valid news text." : `NEWS IS ${data.result}`;
+                    bootbox.alert({
+                        size: "large",
+                        title: "PREDICTION",
+                        message: `<div align='center'><h2>${message}</h2><img style='width:240px;height:232px;' src='${src}'/></div>`,
+                        backdrop: true,
+                        callback: function () {
+                            location.reload();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
